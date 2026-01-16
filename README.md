@@ -7,6 +7,16 @@
 
 ---
 
+## 📸 Screenshots
+
+| 메인 화면 | 게임 플레이 |
+| :---: | :---: |
+| ![Main Screen](./screenshot/screenshot-1.png) | ![Game Play](./screenshot/screenshot-2.png) |
+
+| 관리자 대시보드 | 퍼즐 검수 도구 |
+| :---: | :---: |
+| ![Admin Dashboard](./screenshot/screenshot-3.png) | ![Review Tool](./screenshot/screenshot-4.png) |
+
 ## 🚀 주요 기능 (Key Features)
 
 ### 1. Nano Banana Pro AI 엔진
