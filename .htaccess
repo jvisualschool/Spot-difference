@@ -1,0 +1,10 @@
+RewriteEngine On
+RewriteBase /FINDSPOT/
+
+# Redirect /admin/ to /admin_dashboard.html
+RewriteRule ^admin/?$ admin_dashboard.html [L,R=301]
+
+# Support for client-side routing if needed (optional but good practice)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.html [L]

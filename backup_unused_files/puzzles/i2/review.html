@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>퍼즐 검수 - i2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            width: 98%;
+            max-width: none;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        .puzzle-id {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.2em;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        .image-wrapper {
+            position: relative;
+            border: 3px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f1f5f9;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .image-wrapper h2 {
+            background: #1e293b;
+            color: white;
+            padding: 12px;
+            margin: 0;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+        .image-container {
+            position: relative;
+            width: 100%;
+            line-height: 0;
+        }
+        .image-container img {
+            width: 100%;
+            height: auto;
+        }
+        .image-container canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .differences-column {
+            background: #f8fafc;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 300px);
+            min-height: 500px;
+            position: sticky;
+            top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .differences-header {
+            padding: 20px;
+            background: #fff;
+            border-bottom: 2px solid #e2e8f0;
+            border-radius: 12px 12px 0 0;
+        }
+        .differences-header h2 {
+            font-size: 1.3em;
+            color: #1e293b;
+            margin: 0;
+        }
+        .differences-list {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+        .difference-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            border-left: 5px solid #6366f1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+        .difference-item:hover {
+            transform: translateX(5px);
+        }
+        .difference-item h3 {
+            color: #4f46e5;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .difference-item p {
+            font-size: 0.9rem;
+            color: #475569;
+            margin: 4px 0;
+            line-height: 1.4;
+        }
+        .difference-item.active {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        .id-circle {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            background: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .btn-delete {
+            background: #fee2e2;
+            color: #ef4444;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+        .btn-delete:hover {
+            background: #ef4444;
+            color: white;
+        }
+        .difficulty-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-top: 8px;
+            text-transform: uppercase;
+        }
+        .diff-1, .diff-2 { background: #dcfce7; color: #166534; }
+        .diff-3 { background: #fef9c3; color: #854d0e; }
+        .diff-4, .diff-5 { background: #fee2e2; color: #991b1b; }
+        .actions {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-approve { background: #10b981; color: white; }
+        .btn-regenerate { background: #ef4444; color: white; }
+        .btn-back { background: #64748b; color: white; text-decoration: none; }
+        .btn-copy { background: #f59e0b; color: white; }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        
+        /* Bounding Box Styling */
+        .bbox-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .bbox {
+            position: absolute;
+            border: 3px solid #ff0000;
+            background: rgba(255, 0, 0, 0.1);
+            pointer-events: auto;
+            cursor: move;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            box-sizing: border-box;
+        }
+        .bbox.active {
+            border-color: #fbbf24;
+            background: rgba(251, 191, 36, 0.2);
+            z-index: 100;
+        }
+        .bbox-id {
+            background: #ff0000;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 2px 4px;
+            pointer-events: none;
+        }
+        .active .bbox-id {
+            background: #fbbf24;
+        }
+        /* Resizer handles */
+        .resizer {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border: 1px solid #ff0000;
+            position: absolute;
+            pointer-events: auto;
+        }
+        .active .resizer { border-color: #fbbf24; }
+        .resizer.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .resizer.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .resizer.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .resizer.se { bottom: -5px; right: -5px; cursor: se-resize; }
+                .stats {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 40px;
+            margin-bottom: 20px;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            margin-left: auto;
+        }
+        .header-actions .btn {
+            padding: 8px 20px;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-dashboard { background: rgba(255,255,255,0.2); color: white; text-decoration: none; display: flex; align-items: center; }
+        .btn-dashboard:hover { background: rgba(255,255,255,0.3); }
+        .btn-approve { background: #10b981; color: white; }
+        .btn-approve:hover { background: #059669; }
+        .btn-regenerate { background: #ef4444; color: white; }
+        .btn-regenerate:hover { background: #dc2626; }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 퍼즐 검수</h1>
+        <div class="puzzle-id">Puzzle ID: i2</div>
+        
+        <div class="stats" id="stats-container">
+            <div class="stat-item">
+                <div class="stat-value" id="stat-count">-</div>
+                <div class="stat-label">차이점 개수</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="stat-date">-</div>
+                <div class="stat-label">생성 날짜</div>
+            </div>
+            <div class="header-actions">
+                <a href="../../admin_dashboard.html" class="btn btn-dashboard">⬅️ 대시보드</a>
+                <button class="btn btn-approve" onclick="approve()">✅ 승인 및 저장</button>
+                <button class="btn btn-regenerate" onclick="regenerate()">🔄 재생성</button>
+            </div>
+        </div>
+        
+        <div class="main-layout">
+            <!-- 1. 원본 이미지 -->
+            <div class="image-wrapper">
+                <h2>🖼️ 원본 이미지</h2>
+                <div class="image-container" id="original-container">
+                    <img src="original.png" alt="Original" id="original-img" onerror="if(this.src.includes('.png')) this.src = this.src.replace('.png', '.jpg'); else if(this.src.includes('.jpg')) this.src = this.src.replace('.jpg', '.jpeg'); else if(this.src.includes('.jpeg')) this.src = this.src.replace('.jpeg', '.png');">
+                    <div class="bbox-overlay" id="original-overlay"></div>
+                </div>
+            </div>
+
+            <!-- 2. 수정된 이미지 -->
+            <div class="image-wrapper">
+                <h2>🎨 수정된 이미지</h2>
+                <div class="image-container" id="modified-container">
+                    <img src="modified.jpeg" alt="Modified" id="modified-img" onerror="if(this.src.includes('.jpeg')) this.src = this.src.replace('.jpeg', '.jpg'); else if(this.src.includes('.jpg')) this.src = this.src.replace('.jpg', '.png'); else if(this.src.includes('.png')) this.src = this.src.replace('.png', '.jpeg');">
+                    <div class="bbox-overlay" id="modified-overlay"></div>
+                </div>
+            </div>
+
+            <!-- 3. 차이점 설명 (사이드바) -->
+            <div class="differences-column">
+                <div class="differences-header">
+                    <h2 id="diff-header-title">📋 정답 및 설명</h2>
+                </div>
+                <div class="differences-list" id="diff-list">
+                    <!-- Dynamic List -->
+                </div>
+            </div>
+        </div>
+        
+        
+    </div>
+    
+    <script>
+        const puzzleId = "i2";
+        let answerData = null;
+        let differences = [];
+        let activeId = null;
+        let isDragging = false;
+        let isResizing = false;
+        let currentHandle = null;
+        let startX, startY, startLeft, startTop, startWidth, startHeight;
+
+        async function initEditor() {
+            console.log('초기화 시작...');
+            try {
+                const response = await fetch('answer.json?' + new Date().getTime());
+                if (!response.ok) throw new Error('파일을 찾을 수 없습니다.');
+                
+                answerData = await response.json();
+                differences = answerData.differences;
+                console.log('데이터 로드 완료:', differences.length, '개 차이점');
+                
+                
+                // Update Stats
+                document.getElementById('stat-count').innerText = answerData.total_differences;
+                document.getElementById('diff-header-title').innerText = `📋 정답 및 설명 (${answerData.total_differences})`;
+
+                document.getElementById('stat-date').innerText = answerData.created_at.substring(0, 10);
+                
+                // Render List
+                renderDiffList();
+                
+                const originalImg = document.getElementById('original-img');
+                const modifiedImg = document.getElementById('modified-img');
+                
+                const onImageLoad = () => {
+                    console.log('이미지 로드 상태 체크:', originalImg.complete, modifiedImg.complete);
+                    if (originalImg.complete && modifiedImg.complete) {
+                        renderAllBboxes();
+                    }
+                };
+                
+                originalImg.onload = onImageLoad;
+                modifiedImg.onload = onImageLoad;
+                
+                // 이미 로드되었을 경우를 대비해 한 번 실행
+                onImageLoad();
+                
+                // Handle global mouse events for drag/resize
+                window.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('mouseup', handleMouseUp);
+            } catch (e) {
+                console.error('초기화 중 오류:', e);
+                alert('데이터 로드 실패: ' + e.message);
+            }
+        }
+
+        function renderDiffList() {
+            const list = document.getElementById('diff-list');
+            list.innerHTML = differences.map(diff => `
+                <div class="difference-item ${activeId === diff.id ? 'active' : ''}" id="diff-item-${diff.id}" onclick="selectDiff(${diff.id})">
+                    <div style="display: flex; align-items: center; width: 100%;">
+                        <h3><span class="id-circle">${diff.id}</span> ${diff.name}</h3>
+                        <button class="btn-delete" onclick="event.stopPropagation(); deleteDiff(${diff.id})">삭제</button>
+                    </div>
+                    <p><strong>설명:</strong> ${diff.description}</p>
+                    <p><strong>수정:</strong> ${diff.modification}</p>
+                    <span class="difficulty-badge diff-${diff.difficulty}">난이도 ${diff.difficulty}</span>
+                </div>
+            `).join('');
+        }
+
+        function deleteDiff(id) {
+            if (!confirm('문항을 삭제하시겠습니까?')) return;
+            
+            differences = differences.filter(d => d.id !== id);
+            
+            // Re-index remaining items
+            differences.forEach((d, index) => d.id = index + 1);
+            
+            if (activeId === id) activeId = null;
+            
+            document.getElementById('stat-count').innerText = differences.length;
+            renderDiffList();
+            renderAllBboxes();
+        }
+
+        function renderAllBboxes() {
+            const originalOverlay = document.getElementById('original-overlay');
+            const modifiedOverlay = document.getElementById('modified-overlay');
+            
+            originalOverlay.innerHTML = '';
+            modifiedOverlay.innerHTML = '';
+            
+            differences.forEach(diff => {
+                const originalBbox = createBboxElement(diff, true);
+                const modifiedBbox = createBboxElement(diff, false);
+                originalOverlay.appendChild(originalBbox);
+                modifiedOverlay.appendChild(modifiedBbox);
+            });
+        }
+
+        function createBboxElement(diff, isOriginal) {
+            const el = document.createElement('div');
+            el.className = `bbox ${activeId === diff.id ? 'active' : ''}`;
+            el.dataset.id = diff.id;
+            
+            // Normalize box [x1, y1, x2, y2]
+            const box = Array.isArray(diff.bounding_box) ? 
+                {x1: diff.bounding_box[0], y1: diff.bounding_box[1], x2: diff.bounding_box[2], y2: diff.bounding_box[3]} : 
+                diff.bounding_box;
+            
+            const left = (box.x1 / 1024) * 100;
+            const top = (box.y1 / 1024) * 100;
+            const width = ((box.x2 - box.x1) / 1024) * 100;
+            const height = ((box.y2 - box.y1) / 1024) * 100;
+            
+            el.style.left = left + '%';
+            el.style.top = top + '%';
+            el.style.width = width + '%';
+            el.style.height = height + '%';
+            
+            const idBadge = document.createElement('div');
+            idBadge.className = 'bbox-id';
+            idBadge.innerText = diff.id;
+            el.appendChild(idBadge);
+            
+            // Add resizers if active
+            if (activeId === diff.id) {
+                ['nw', 'ne', 'sw', 'se'].forEach(handle => {
+                    const resizer = document.createElement('div');
+                    resizer.className = `resizer ${handle}`;
+                    resizer.onmousedown = (e) => startResize(e, diff.id, handle);
+                    el.appendChild(resizer);
+                });
+            }
+            
+            el.onmousedown = (e) => {
+                if (e.target.className.includes('resizer')) return;
+                startDrag(e, diff.id);
+            };
+            
+            return el;
+        }
+
+        function selectDiff(id) {
+            activeId = id;
+            // Update list highlight
+            document.querySelectorAll('.difference-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeItem = document.getElementById(`diff-item-${id}`);
+            if (activeItem) {
+                activeItem.classList.add('active');
+                activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            renderAllBboxes();
+        }
+
+        function startDrag(e, id) {
+            e.stopPropagation();
+            selectDiff(id);
+            isDragging = true;
+            const diff = differences.find(d => d.id === id);
+            const box = Array.isArray(diff.bounding_box) ? 
+                {x1: diff.bounding_box[0], y1: diff.bounding_box[1], x2: diff.bounding_box[2], y2: diff.bounding_box[3]} : 
+                diff.bounding_box;
+                
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = box.x1;
+            startTop = box.y1;
+            startWidth = box.x2 - box.x1;
+            startHeight = box.y2 - box.y1;
+        }
+
+        function startResize(e, id, handle) {
+            e.stopPropagation();
+            selectDiff(id);
+            isResizing = true;
+            currentHandle = handle;
+            const diff = differences.find(d => d.id === id);
+            const box = Array.isArray(diff.bounding_box) ? 
+                {x1: diff.bounding_box[0], y1: diff.bounding_box[1], x2: diff.bounding_box[2], y2: diff.bounding_box[3]} : 
+                diff.bounding_box;
+
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = box.x1;
+            startTop = box.y1;
+            startWidth = box.x2 - box.x1;
+            startHeight = box.y2 - box.y1;
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging && !isResizing) return;
+            
+            const diff = differences.find(d => d.id === activeId);
+            const img = document.getElementById('original-img');
+            const rect = img.getBoundingClientRect();
+            
+            // Convert pixel movement to 1024 scale
+            const dx = (e.clientX - startX) * (1024 / rect.width);
+            const dy = (e.clientY - startY) * (1024 / rect.height);
+            
+            let newBox = {... (Array.isArray(diff.bounding_box) ? 
+                {x1: diff.bounding_box[0], y1: diff.bounding_box[1], x2: diff.bounding_box[2], y2: diff.bounding_box[3]} : 
+                diff.bounding_box)};
+
+            if (isDragging) {
+                const x1 = Math.max(0, Math.min(1024 - startWidth, startLeft + dx));
+                const y1 = Math.max(0, Math.min(1024 - startHeight, startTop + dy));
+                newBox = { x1, y1, x2: x1 + startWidth, y2: y1 + startHeight };
+            } else if (isResizing) {
+                if (currentHandle.includes('e')) newBox.x2 = Math.min(1024, startLeft + startWidth + dx);
+                if (currentHandle.includes('w')) newBox.x1 = Math.max(0, Math.min(newBox.x2 - 10, startLeft + dx));
+                if (currentHandle.includes('s')) newBox.y2 = Math.min(1024, startTop + startHeight + dy);
+                if (currentHandle.includes('n')) newBox.y1 = Math.max(0, Math.min(newBox.y2 - 10, startTop + dy));
+            }
+            
+            diff.bounding_box = newBox;
+            renderAllBboxes();
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+            isResizing = false;
+        }
+
+        async function approve() {
+            const fullData = { ...answerData, differences, total_differences: differences.length };
+            
+            try {
+                const response = await fetch('../../save-puzzle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(fullData)
+                });
+                
+                if (response.ok) {
+                    alert('✅ 정답 위치가 저장되었으며 퍼즐이 승인되었습니다! 대시보드로 이동합니다.');
+                    window.location.href = '../../admin_dashboard.html';
+                } else {
+                    throw new Error('저장 실패');
+                }
+            } catch (error) {
+                alert('❌ 저장 중 오류 발생: ' + error.message);
+            }
+        }
+        
+                async function regenerate() {
+            if (!confirm(`🔄 이 퍼즐을 재생성하시겠습니까?\nAI가 새로운 차이점을 다시 생성하며, 현재 수정된 내용은 사라집니다.`)) return;
+            
+            const btn = document.querySelector('.btn-regenerate');
+            const originalText = btn.innerText;
+            btn.innerText = '⏳ 생성 중...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('../../regenerate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ puzzle_id: puzzleId })
+                });
+                
+                if (response.ok) {
+                    alert('✅ 재생성이 완료되었습니다. 페이지를 새로고침합니다.');
+                    location.reload();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || '재생성 실패');
+                }
+            } catch (error) {
+                alert('❌ 재생성 중 오류 발생: ' + error.message);
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        initEditor();
+    </script>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>틀린그림찾기</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><line x1='21' y1='21' x2='16.65' y2='16.65'/></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #f59e0b;
+            --primary-glow: rgba(245, 158, 11, 0.4);
+            --secondary: #ef4444;
+            --background: #0c0c0e;
+            --card-bg: rgba(24, 24, 27, 0.8);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.1) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(239, 68, 68, 0.1) 0px, transparent 50%);
+            padding: 3rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #ffffff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.05em;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .puzzle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .puzzle-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 2.5rem;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            backdrop-filter: blur(20px);
+        }
+
+        .puzzle-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5),
+                0 0 30px var(--primary-glow);
+        }
+
+        .card-image-wrapper {
+            aspect-ratio: 4/3;
+            background: #18181b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+
+        .puzzle-card:hover .card-image {
+            transform: scale(1.1);
+        }
+
+        .play-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .puzzle-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-button {
+            background: var(--primary);
+            color: #000;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: 900;
+            font-size: 1.2rem;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .puzzle-card:hover .play-button {
+            transform: translateY(0);
+        }
+
+        .card-content {
+            padding: 1.2rem 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .card-tag {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 5rem;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            grid-column: 1 / -1;
+        }
+
+        .badge-new {
+            background: var(--secondary);
+            color: white;
+            padding: 0.2rem 0.8rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .badge-recommended {
+            color: var(--primary);
+            font-size: 1.8rem;
+            line-height: 1;
+        }
+
+        footer {
+            margin-top: 8rem;
+            text-align: center;
+            color: var(--text-muted);
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .footer-tech {
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--primary);
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        .footer-copyright {
+            font-size: 0.9rem;
+            opacity: 0.6;
+            font-weight: 400;
+        }
+
+        .footer-author {
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 0.5rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-up {
+            animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="animate-up">
+            <!-- Admin button hidden for public users -->
+            <!-- 
+            <div style="position: absolute; top: 1rem; right: 1rem;">
+                <a href="./admin_dashboard.html"
+                    style="color: var(--text-muted); text-decoration: none; font-size: 0.9rem; border: 1px solid var(--card-border); padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;"
+                    onmouseover="this.style.color='white'; this.style.borderColor='var(--primary)'"
+                    onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--card-border)'">
+                    <i data-lucide="settings" style="width: 16px; height: 16px;"></i> Admin
+                </a>
+            </div>
+            -->
+            <h1>틀린그림찾기 <span style="font-weight: 400;">Spot the Difference</span></h1>
+            <p class="subtitle">AI가 생성한 아름다운 작품들 속에서 숨겨진 차이점을 찾아보세요.</p>
+        </header>
+
+        <div id="puzzle-grid" class="puzzle-grid animate-up" style="animation-delay: 0.2s;">
+            <div class="loading">퍼즐 목록을 불러오는 중...</div>
+        </div>
+
+        <footer>
+            <div class="footer-tech">
+                <a href="https://deepmind.google/technologies/gemini/" target="_blank"
+                    style="color: inherit; text-decoration: none;">Nano Banana Pro</a> •
+                <a href="https://www.php.net/" target="_blank" style="color: inherit; text-decoration: none;">PHP</a> •
+                <a href="https://www.mysql.com/" target="_blank"
+                    style="color: inherit; text-decoration: none;">MySQL</a> •
+                <a href="https://react.dev/" target="_blank" style="color: inherit; text-decoration: none;">React</a>
+            </div>
+            <div class="footer-app">틀린그림찾기 Spot the Difference</div>
+            <div class="footer-author"><a href="mailto:jvisualschool@gmail.com"
+                    style="color: inherit; text-decoration: none;">Jinho Jung</a></div>
+            <div class="footer-copyright">&copy; 2026 All rights reserved.</div>
+        </footer>
+    </div>
+
+    <script>
+        async function loadPuzzles() {
+            try {
+                const response = await fetch('./api.php?action=list-puzzles');
+                if (!response.ok) throw new Error('Cannot load puzzles');
+
+                const data = await response.json();
+                const grid = document.getElementById('puzzle-grid');
+                grid.innerHTML = '';
+
+                // 퍼즐 번호 순으로 정렬 (i1, i2, ... i10, i11 ...)
+                const sortedPuzzles = data.puzzles.sort((a, b) => {
+                    const numA = parseInt(a.id.replace(/[^0-9]/g, ''));
+                    const numB = parseInt(b.id.replace(/[^0-9]/g, ''));
+                    return numA - numB;
+                });
+
+                // 퍼즐 상태 필터링 및 렌더링
+                sortedPuzzles.filter(p => p.status !== 'hidden').forEach((puzzle, index) => {
+                    const isPending = puzzle.status === 'pending';
+                    const card = document.createElement(isPending ? 'div' : 'a');
+                    if (!isPending) {
+                        card.href = `game.html?puzzle=${puzzle.id}`;
+                    }
+                    card.className = 'puzzle-card';
+                    if (isPending) card.style.cursor = 'default';
+                    card.style.animationDelay = `${0.1 * index}s`;
+
+                    const puzzleNum = puzzle.id.replace(/[^0-9]/g, '');
+
+                    // 신규 퍼즐 로직 (3일 이내)
+                    const createdAt = puzzle.created_at ? new Date(puzzle.created_at) : new Date(0);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - createdAt);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    const isNew = diffDays <= 3;
+
+                    card.innerHTML = `
+                        <div class="card-image-wrapper">
+                            <img src="./puzzles/${puzzle.id}/original.jpg" 
+                                 onerror="this.onerror=null; const exts=['png','jpeg']; const tryNext=(i)=>{if(i<exts.length){this.src=this.src.replace(/\\.[^.]+$/,'.'+exts[i]);this.onerror=()=>tryNext(i+1);}};tryNext(0);"
+                                 class="card-image" alt="Puzzle ${puzzle.id}">
+                            ${isNew ? '<div style="position:absolute; top:1.5rem; left:1.5rem; z-index:10;" class="badge-new">NEW</div>' : ''}
+                            ${isPending ? `
+                                <div style="position:absolute; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:0.5rem; z-index:20;">
+                                    <div style="font-weight:900; font-size:1.5rem; letter-spacing:0.1em; color:#f59e0b;">COMING SOON</div>
+                                </div>
+                            ` : `
+                                <div class="play-overlay">
+                                    <div class="play-button">PLAY NOW</div>
+                                </div>
+                            `}
+                        </div>
+                        <div class="card-content">
+                            <div class="card-title">
+                                <span>${puzzleNum} ${puzzle.recommended ? '<i data-lucide="star" class="badge-recommended" style="color: var(--primary); display: inline-block; vertical-align: middle; margin-left: 0.5rem;"></i>' : ''}</span>
+                                <span class="card-tag">${puzzle.differences} 차이점</span>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('puzzle-grid').innerHTML = `
+                    <div class="loading" style="color: #ef4444;">퍼즐을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.</div>
+                `;
+            }
+        }
+
+        window.onload = loadPuzzles;
+    </script>
+</body>
+
+</html>

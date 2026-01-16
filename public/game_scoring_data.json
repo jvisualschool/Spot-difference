@@ -1,0 +1,110 @@
+{
+  "game_info": {
+    "title": "고양이 작가의 방 - 틀린그림찾기",
+    "description": "3D 복셀 아트 스타일의 틀린 그림 찾기 게임",
+    "resolution": "1024x1024",
+    "total_differences": 8,
+    "difficulty": "medium",
+    "created_date": "2026-01-11"
+  },
+  "images": {
+    "original": "A.png",
+    "modified": "B.png"
+  },
+  "differences": [
+    {
+      "id": 1,
+      "name": "분홍색종이",
+      "description": "떠다니는 종이 중 하나가 흰색에서 분홍색으로 변경",
+      "center": { "x": 350, "y": 250 },
+      "bounding_box": { "x1": 320, "y1": 220, "x2": 380, "y2": 280 },
+      "size": "small",
+      "difficulty": "medium"
+    },
+    {
+      "id": 2,
+      "name": "선반블록",
+      "description": "상단 선반에 노란색 큐브 블록 추가",
+      "center": { "x": 910, "y": 270 },
+      "bounding_box": { "x1": 890, "y1": 240, "x2": 930, "y2": 300 },
+      "size": "small",
+      "difficulty": "easy"
+    },
+    {
+      "id": 3,
+      "name": "의자색상",
+      "description": "고양이가 앉은 의자 색상이 파란색에서 보라색으로 변경",
+      "center": { "x": 380, "y": 680 },
+      "bounding_box": { "x1": 340, "y1": 640, "x2": 420, "y2": 720 },
+      "size": "medium",
+      "difficulty": "easy"
+    },
+    {
+      "id": 4,
+      "name": "고양이안경",
+      "description": "고양이의 안경 프레임이 둥근 모양에서 사각 모양으로 변경",
+      "center": { "x": 470, "y": 520 },
+      "bounding_box": { "x1": 450, "y1": 500, "x2": 490, "y2": 540 },
+      "size": "small",
+      "difficulty": "hard"
+    },
+    {
+      "id": 5,
+      "name": "서랍손잡이",
+      "description": "책상 서랍의 손잡이 색상이 노란색에서 빨간색으로 변경",
+      "center": { "x": 850, "y": 460 },
+      "bounding_box": { "x1": 830, "y1": 440, "x2": 870, "y2": 480 },
+      "size": "small",
+      "difficulty": "hard"
+    },
+    {
+      "id": 6,
+      "name": "책상화분",
+      "description": "책상 위에 작은 녹색 화분이 추가됨",
+      "center": { "x": 540, "y": 580 },
+      "bounding_box": { "x1": 520, "y1": 560, "x2": 560, "y2": 600 },
+      "size": "small",
+      "difficulty": "medium"
+    },
+    {
+      "id": 7,
+      "name": "침대이불",
+      "description": "침대의 이불 색상이 파란색에서 연한 녹색으로 변경",
+      "center": { "x": 280, "y": 230 },
+      "bounding_box": { "x1": 240, "y1": 200, "x2": 320, "y2": 260 },
+      "size": "medium",
+      "difficulty": "easy"
+    },
+    {
+      "id": 8,
+      "name": "사라진종이",
+      "description": "오른쪽 상단의 떠다니는 종이 한 장이 제거됨",
+      "center": { "x": 650, "y": 180 },
+      "bounding_box": { "x1": 630, "y1": 160, "x2": 670, "y2": 200 },
+      "size": "small",
+      "difficulty": "medium"
+    }
+  ],
+  "scoring_system": {
+    "total_points": 100,
+    "points_per_difference": {
+      "easy": 10,
+      "medium": 15,
+      "hard": 20
+    },
+    "time_bonus": {
+      "enabled": true,
+      "max_bonus": 20,
+      "time_limit_seconds": 120
+    }
+  },
+  "game_mechanics": {
+    "click_tolerance_pixels": 20,
+    "max_wrong_clicks": 3,
+    "hint_system": {
+      "enabled": true,
+      "max_hints": 2,
+      "penalty_per_hint": 10
+    }
+  }
+}

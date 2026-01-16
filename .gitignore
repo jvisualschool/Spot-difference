@@ -1,0 +1,36 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints
+
+# Project specific
+IMG/*
+!IMG/.gitkeep
+public/puzzles/*
+!public/puzzles/.gitkeep
+puzzles/*
+!puzzles/.gitkeep
+server.log
+
+# Secrets
+.env
+config.php
+config.py
+db_config.php
+db_config.py
+setup_secrets.sh
+*.pem
+**/config.py
+**/db_config.py
+**/db_config.php
